@@ -1,16 +1,22 @@
 <script setup>
-import { useRouter } from 'vue-router'
-import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { ref, onMounted, watch } from 'vue'
 import { auth } from '../firebase'
 import { signOut } from 'firebase/auth'
 
 
 const router = useRouter()
+const route = useRoute()
 const searchQuery = ref('')
 const isDarkMode = ref(true)
 
+// Clear search input when navigating to a new page
+watch(() => route.path, () => {
+  searchQuery.value = ''
+})
+
 // Check theme on mount
-import { onMounted } from 'vue'
+// Check theme on mount
 onMounted(() => {
   const savedTheme = localStorage.getItem('theme')
   if (savedTheme === 'light') {
