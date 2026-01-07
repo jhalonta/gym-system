@@ -6,23 +6,37 @@
     </header>
 
     <div class="plans-grid">
-      <div v-for="plan in plans" :key="plan.id" class="plan-card" :class="{ popular: plan.isPopular }">
+      <div
+        v-for="plan in plans"
+        :key="plan.id"
+        class="plan-card"
+        :class="{ popular: plan.isPopular }"
+      >
         <div v-if="plan.isPopular" class="popular-badge">Más Popular</div>
+
         <div class="plan-header">
           <h3>{{ plan.name }}</h3>
           <div class="price">
-            <span class="currency">$</span>
+            <span class="currency">S/</span>
             <span class="amount">{{ plan.price }}</span>
             <span class="period">/mes</span>
           </div>
         </div>
+
         <ul class="features-list">
           <li v-for="(feature, index) in plan.features" :key="index">
             <span class="material-symbols-outlined check-icon">check_circle</span>
             {{ feature }}
           </li>
         </ul>
-        <button @click="selectPlan(plan)" class="select-plan-btn" :class="{ outline: !plan.isPopular }">Seleccionar Plan</button>
+
+        <button
+          @click="selectPlan(plan)"
+          class="select-plan-btn"
+          :class="{ outline: !plan.isPopular }"
+        >
+          Seleccionar Plan
+        </button>
       </div>
     </div>
   </div>
@@ -36,24 +50,34 @@ const router = useRouter()
 const plans = [
   {
     id: 1,
-    name: "Basic",
+    name: 'Basic',
     price: 29,
     isPopular: false,
-    features: ["Acceso al Gimnasio", "Acceso a Casilleros", "Wi-Fi Gratis"]
+    features: ['Acceso al Gimnasio', 'Acceso a Casilleros', 'Wi-Fi Gratis']
   },
   {
     id: 2,
-    name: "Gold Plan",
+    name: 'Gold Plan',
     price: 49,
     isPopular: true,
-    features: ["Todo lo de Basic", "Clases Grupales", "Acceso a Sauna", "1 Sesión de Entrenador Personal"]
+    features: [
+      'Todo lo de Basic',
+      'Clases Grupales',
+      'Acceso a Sauna',
+      '1 Sesión de Entrenador Personal'
+    ]
   },
   {
     id: 3,
-    name: "Platinum",
+    name: 'Platinum',
     price: 89,
     isPopular: false,
-    features: ["Todo lo de Gold", "Entrenamiento Ilimitado", "Consulta Nutricional", "Pase de Invitado"]
+    features: [
+      'Todo lo de Gold',
+      'Entrenamiento Ilimitado',
+      'Consulta Nutricional',
+      'Pase de Invitado'
+    ]
   }
 ]
 
@@ -64,11 +88,38 @@ const selectPlan = (plan) => {
 
 <style scoped>
 .plans-view {
+  /* Break out of parent padding */
+  margin: -2rem;
+  width: calc(100% + 4rem);
+
+  position: relative;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 3rem;
   align-items: center;
-  animation: fadeIn 0.5s ease-out;
+  gap: 3rem;
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  overflow: hidden;
+}
+
+/* IMAGEN DE FONDO */
+.plans-view::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('../assets/img/gym.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: brightness(0.35) contrast(1.1);
+  z-index: 0;
+}
+
+/* CONTENIDO */
+.plans-view > * {
+  position: relative;
+  z-index: 2;
 }
 
 .view-header {
@@ -106,7 +157,6 @@ const selectPlan = (plan) => {
 .plan-card:hover {
   transform: translateY(-10px);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .plan-card.popular {
@@ -130,7 +180,6 @@ const selectPlan = (plan) => {
   border-radius: 20px;
   font-size: 0.8rem;
   font-weight: 700;
-  text-transform: uppercase;
 }
 
 .plan-header {
@@ -147,18 +196,15 @@ const selectPlan = (plan) => {
   display: flex;
   justify-content: center;
   align-items: baseline;
-  color: var(--text-primary);
 }
 
 .currency {
   font-size: 1.5rem;
-  font-weight: 500;
 }
 
 .amount {
   font-size: 3.5rem;
   font-weight: 800;
-  line-height: 1;
 }
 
 .period {
@@ -196,16 +242,5 @@ const selectPlan = (plan) => {
   background: transparent;
   border: 1px solid var(--text-secondary);
   color: var(--text-primary);
-  box-shadow: none;
-}
-
-.select-plan-btn.outline:hover {
-  border-color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 </style>

@@ -26,10 +26,12 @@
           <tr v-if="loading">
              <td colspan="5" style="text-align:center; padding: 2rem;">Cargando Members...</td>
           </tr>
-          <tr v-else-if="members.length === 0">
-             <td colspan="5" style="text-align:center; padding: 2rem;">No se encontraron Members. ¡Agrega uno para empezar!</td>
+          <tr v-else-if="filteredMembers.length === 0">
+             <td colspan="5" style="text-align:center; padding: 2rem;">
+               {{ searchQuery ? 'No se encontraron resultados para "' + searchQuery + '"' : 'No se encontraron Members. ¡Agrega uno para empezar!' }}
+             </td>
           </tr>
-          <tr v-for="member in members" :key="member.id">
+          <tr v-for="member in filteredMembers" :key="member.id">
             <td>
               <div class="member-info">
                 <div class="avatar">{{ getInitials(member.name) }}</div>
@@ -150,6 +152,7 @@ const memberToDelete = ref(null)   // New state
 const isEditing = ref(false)
 const saving = ref(false)
 const currentMemberId = ref(null)
+const searchQuery = ref('') // Search state
 
 const form = ref({
   name: '',
@@ -175,6 +178,11 @@ onMounted(() => {
     loading.value = false
   })
 
+  // Check for search query
+  if (route.query.search) {
+    searchQuery.value = route.query.search
+  }
+
   // Check for plan in query
   if (route.query.plan) {
     openAddModal()
@@ -182,6 +190,24 @@ onMounted(() => {
     // Clean URL
     router.replace({ path: '/members', query: {} })
   }
+})
+
+// Update search when URL changes
+import { watch } from 'vue' // Add import
+watch(() => route.query.search, (newSearch) => {
+  searchQuery.value = newSearch || ''
+})
+
+// Computed Filtered Members
+import { computed } from 'vue' // Add import
+const filteredMembers = computed(() => {
+  if (!searchQuery.value) return members.value
+  const query = searchQuery.value.toLowerCase()
+  return members.value.filter(member => 
+    member.name.toLowerCase().includes(query) || 
+    member.email.toLowerCase().includes(query) ||
+    member.plan.toLowerCase().includes(query)
+  )
 })
 
 onUnmounted(() => {
@@ -195,7 +221,7 @@ const getInitials = (name) => {
 
 const formatDate = (dateStr) => {
   if (!dateStr) return ''
-  return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  return new Date(dateStr).toLocaleDateString('es-ES', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 // Modal Logic
@@ -271,7 +297,8 @@ const executeDelete = async () => {
 .members-view {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
+  height: 100%;
   animation: fadeIn 0.5s ease-out;
 }
 
@@ -464,9 +491,15 @@ input, select {
   padding: 0.75rem;
   border-radius: var(--radius-sm);
   background: var(--bg-primary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: white;
+  border: 1px solid var(--text-secondary); /* or rgba(255, 255, 255, 0.1) adapted */
+  border-color: rgba(255, 255, 255, 0.1); /* Default for dark mode */
+  color: var(--text-primary); /* Adapted text color */
   font-family: inherit;
+}
+
+:root.light-mode input,
+:root.light-mode select {
+    border-color: rgba(0, 0, 0, 0.1);
 }
 
 input:focus, select:focus {

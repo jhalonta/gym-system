@@ -1,5 +1,17 @@
 <template>
   <div class="login-container">
+    <!-- Branding Outside Card -->
+    <div class="brand-container">
+      <svg width="600" height="250" viewBox="0 0 600 250" class="arched-brand">
+        <path id="curve" d="M 50 180 Q 300 60 550 180" fill="transparent"/>
+        <text width="600">
+          <textPath href="#curve" startOffset="50%" text-anchor="middle" class="brand-text">
+            Royal Fit Gym
+          </textPath>
+        </text>
+      </svg>
+    </div>
+
     <div class="login-card">
       <div class="brand">
         <span class="material-symbols-outlined logo-icon">fitness_center</span>
@@ -29,7 +41,7 @@
         
         <button type="submit" class="login-btn" :disabled="isLoading">
           <span v-if="isLoading" class="loader"></span>
-          <span v-else>Sign In <span class="material-symbols-outlined">arrow_forward</span></span>
+          <span v-else>Sign In</span>
         </button>
       </form>
     </div>
@@ -81,12 +93,36 @@ const handleLogin = async () => {
 
 <style scoped>
 .login-container {
-  height: 100vh;
-  width: 100vw;
   display: flex;
-  align-items: center;
+  flex-direction: column; /* Stack items vertically */
   justify-content: center;
-  background: radial-gradient(circle at top right, #1e1b4b, var(--bg-primary) 60%);
+  align-items: center;
+  min-height: 100vh;
+  /* Fixed path to use relative URL */
+  background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.9)), url('../assets/img/login_bg.png');
+  background-size: cover;
+  background-position: center;
+  padding: 1rem;
+  gap: 2rem; /* Space between branded text and card */
+}
+
+.brand-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: -2rem; /* Pull closer to card slightly if needed */
+  z-index: 10;
+}
+
+.brand-text {
+  font-family: 'Pirata One', cursive;
+  font-size: 5.5rem; /* Even larger */
+  font-weight: 900;
+  fill: #39FF14; 
+  stroke: #39FF14; /* Add stroke to make it thicker */
+  stroke-width: 1.5px;
+  letter-spacing: 4px;
+  filter: drop-shadow(0px 0px 15px rgba(57, 255, 20, 0.8)); /* Stronger Glow */
+  text-transform: uppercase;
 }
 
 .login-card {
@@ -98,8 +134,11 @@ const handleLogin = async () => {
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(255, 255, 255, 0.05);
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative; 
 }
 
+/* Restore internal logo for the card itself if needed, or remove. 
+   Keeping it as part of the form header layout */
 .brand {
   display: flex;
   align-items: center;
@@ -114,21 +153,6 @@ const handleLogin = async () => {
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
-
-.brand h1 {
-  font-size: 2rem;
-  margin: 0;
-  background: linear-gradient(to right, #fff, #94a3b8);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.subtitle {
-  text-align: center;
-  color: var(--text-secondary);
-  margin-bottom: 2.5rem;
 }
 
 .login-form {
@@ -183,6 +207,20 @@ input:focus {
   justify-content: center;
   gap: 0.5rem;
   padding: 1rem;
+  background: #39FF14; /* Neon Green */
+  color: black; /* High contrast */
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(57, 255, 20, 0.3);
+}
+
+.login-btn:hover {
+  background: #32d613;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(57, 255, 20, 0.5);
 }
 
 .login-btn:disabled {

@@ -1,9 +1,37 @@
 <script setup>
 import { useRouter } from 'vue-router'
+import { ref } from 'vue'
 import { auth } from '../firebase'
 import { signOut } from 'firebase/auth'
 
+
 const router = useRouter()
+const searchQuery = ref('')
+const isDarkMode = ref(true)
+
+// Check theme on mount
+import { onMounted } from 'vue'
+onMounted(() => {
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'light') {
+    isDarkMode.value = false
+    document.documentElement.classList.add('light-mode')
+  } else {
+    isDarkMode.value = true
+    document.documentElement.classList.remove('light-mode')
+  }
+})
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value
+  if (isDarkMode.value) {
+    document.documentElement.classList.remove('light-mode')
+    localStorage.setItem('theme', 'dark')
+  } else {
+    document.documentElement.classList.add('light-mode')
+    localStorage.setItem('theme', 'light')
+  }
+}
 
 const handleLogout = async () => {
   try {
@@ -11,6 +39,13 @@ const handleLogout = async () => {
     router.push('/login')
   } catch (error) {
     console.error('Logout error:', error)
+  }
+}
+
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    router.push({ path: '/members', query: { search: searchQuery.value } })
+    searchQuery.value = '' // Optional: clear after search or keep it
   }
 }
 </script>
@@ -48,11 +83,21 @@ const handleLogout = async () => {
 
     <main class="main-content">
       <div class="top-bar">
-        <div class="search-bar">
+        <div class="search-bar" v-if="$route.path !== '/plans'">
           <span class="material-symbols-outlined">search</span>
-          <input type="text" placeholder="Search anything...">
+          <input 
+            type="text" 
+            placeholder="Buscar miembro..." 
+            v-model="searchQuery"
+            @keyup.enter="handleSearch"
+          >
         </div>
+        <div class="search-bar-placeholder" v-else></div> <!-- Spacer to keep layout alignment -->
+
         <div class="user-profile">
+          <button class="icon-btn" @click="toggleTheme" title="Toggle Theme">
+            <span class="material-symbols-outlined">{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</span>
+          </button>
           <button class="icon-btn">
             <span class="material-symbols-outlined">notifications</span>
             <span class="badge"></span>

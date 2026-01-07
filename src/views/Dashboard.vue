@@ -1,9 +1,11 @@
 <template>
   <div class="dashboard-view">
-    <header class="view-header">
-      <h1>Panel de Control</h1>
-      <p class="subtitle">Bienvenido de nuevo, Admin</p>
-    </header>
+    <div class="dashboard-banner">
+      <div class="banner-content">
+        <h1>Panel de Control</h1>
+        <p class="subtitle">Bienvenido de nuevo, Admin</p>
+      </div>
+    </div>
 
     <div class="stats-grid">
       <div class="stat-card">
@@ -23,7 +25,7 @@
         </div>
         <div class="stat-info">
           <h3>Ingresos Mensuales</h3>
-          <p class="stat-value">${{ monthlyRevenue.toLocaleString() }}</p>
+          <p class="stat-value">S/ {{ monthlyRevenue.toLocaleString('es-PE') }}</p>
           <span class="stat-change positive">Estimado por planes</span>
         </div>
       </div>
@@ -70,16 +72,36 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { db } from '../firebase'
+import { db, functions } from '../firebase'
 import { collection, onSnapshot, query, orderBy, limit } from 'firebase/firestore'
+import { httpsCallable } from 'firebase/functions'
 
 const members = ref([])
 const loading = ref(true)
+const stats = ref(null) // Server-side stats
 
 // Real-time listener
 let unsubscribe = null
 
-onMounted(() => {
+onMounted(async () => {
+  // 1. Try to fetch Cached Stats from Cloud Function
+  // NOTE: This is disabled by default to prevent Console Errors until you deploy the functions.
+  // To enable, set 'useCloudFunctions' to true.
+  const useCloudFunctions = false; 
+
+  if (useCloudFunctions) {
+    try {
+      const getStats = httpsCallable(functions, 'getDashboardStats');
+      const result = await getStats();
+      stats.value = result.data;
+      console.log("Loaded stats from Cloud Function:", result.data);
+    } catch (e) {
+      console.warn("Cloud function failed (maybe not deployed). Falling back to Client-side calculation.", e);
+    }
+  }
+
+  // 2. Load Recent Members via Firestore (Real-time)
+  // We keep this real-time because the "Activity Feed" needs to feel live.
   const q = query(
     collection(db, 'members'), 
     orderBy('joinedDate', 'desc')
@@ -101,22 +123,25 @@ onUnmounted(() => {
   if (unsubscribe) unsubscribe()
 })
 
-// Metrics Calculations
-const totalMembers = computed(() => members.value.length)
+// Metrics Calculations (Hybrid: Server > Client)
+const totalMembers = computed(() => {
+  return stats.value ? stats.value.totalMembers : members.value.length
+})
 
 const activeMembers = computed(() => {
-  return members.value.filter(m => m.status === 'Active').length
+  return stats.value ? stats.value.activeMembers : members.value.filter(m => m.status === 'Active').length
 })
 
 const monthlyRevenue = computed(() => {
+  if (stats.value) return stats.value.monthlyRevenue;
+  
   return members.value.reduce((total, member) => {
-    // Estimating revenue based on plan names
+    // Client-side fallback calculation
     let price = 0
     if (member.plan === 'Basic') price = 29
     if (member.plan === 'Gold' || member.plan === 'Gold Plan') price = 49
     if (member.plan === 'Platinum') price = 89
-    // If status is not active, maybe we shouldn't count it? 
-    // For now, let's assume all members pay unless inactive
+    if (member.plan === 'Silver Plan') price = 39 // Added missing plan price
     if (member.status === 'Inactive') return total
     return total + price
   }, 0)
@@ -145,13 +170,26 @@ const formatDate = (dateStr) => {
   animation: fadeIn 0.5s ease-out;
 }
 
-.view-header h1 {
+.dashboard-banner {
+  background-image: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.4)), url('../assets/img/dashboard_hero.png');
+  background-size: cover;
+  background-position: center;
+  padding: 3rem 2rem;
+  border-radius: var(--radius-lg);
+  margin-bottom: 1rem;
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+}
+
+.banner-content h1 {
   font-size: 2.5rem;
   margin-bottom: 0.5rem;
+  color: white;
 }
 
 .subtitle {
-  color: var(--text-secondary);
+  color: var(--text-gray);
   font-size: 1.1rem;
 }
 
