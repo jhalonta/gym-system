@@ -241,7 +241,7 @@ const handleSearch = () => {
 .search-bar input {
   background: transparent;
   border: none;
-  color: white;
+  color: var(--text-primary);
   width: 100%;
   outline: none;
 }
